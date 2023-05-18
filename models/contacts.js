@@ -1,60 +1,69 @@
-const fs = require('fs/promises');
+const fs = require("fs/promises");
 const path = require("path");
+const {nanoid} = require("nanoid")
 
-const contactsRath = path.join(__dirname, "./contacts.json")
+const contactsPath = path.join(__dirname, "./contacts.json")
 
-const listContacts = async () => {
-  const data = await fs.readFile(contactsRath, "utf-8");
+const allContacts = async () => {
+  const data = await fs.readFile(contactsPath, "utf-8");
   const contacts = JSON.parse(data);
-  console.log("List of contacts: ");
-  console.table(contacts);
+  return JSON.parse(data);
+
 }
 
 const getContactById = async (id) => {    
-const data = await fs.readFile(contactsRath, "utf-8");
-const contacts = JSON.parse(data);
+  const data = await fs.readFile(contactsPath, "utf-8");
+  const contacts = JSON.parse(data);
 
-const contact = contacts.find(item => item.id === id);
-console.log(`Get contact by ID ${id}:`);
-console.table(contact);
-return contact || null;}
+  const contact = contacts.find(item => item.id === id);
 
-const removeContact = async (contactId) => {
-  const data = await fs.readFile(contactsRath, "utf-8");
+  return contact || null;
+}
+
+const deleteContact = async (contactId) => {
+  const data = await fs.readFile(contactsPath, "utf-8");
   const contacts = JSON.parse(data);
 
   const newContact = contacts.filter((contact) => contact.id !== contactId);
-  console.log("Contact deleted successfully! New list of contacts: ");
-  console.table(newContact);
+  await fs.writeFile(contactsPath, JSON.stringify(newContact, null, 2));
+  return newContact;
+
 }
 
-const addContact = async (name, email, phone) => {    
-const data = await fs.readFile(contactsRath, "utf-8");
-const contacts = JSON.parse(data);
-contacts.push({
-    id: contacts.length + 1,
+const addContact = async ({name, email, phone}) => {    
+  const data = await fs.readFile(contactsPath, "utf-8");
+  const contacts = JSON.parse(data);
+  contacts.push({
+    id: nanoid(),
     name: name,
     email: email,
     phone: phone,
   });
 
-  console.log(" New lists of contacts: ");
-  console.table(contacts);}
-
-const updateContact = async (id, data) => {
-  const contactsId = String(id);
-  const data = await fs.readFile(contactsRath, "utf-8");
-const contacts = JSON.parse(data);
-
-const contact = contacts.find(item => item.id === id);
-
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return contacts;
 
 }
 
+const updateContact = async(id, {name, email, phone}) => {
+  const data = await fs.readFile(contactsPath, "utf-8");
+  const contacts = JSON.parse(data);
+
+  const contactIndex = contacts.findIndex(item => item.id === id);
+  if(contactIndex === -1){
+    return null;
+  }
+  contacts[contactIndex] = {id, name, email, phone};
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return contacts[contactIndex];
+
+}
+
+
 module.exports = {
-  listContacts,
+  allContacts,
   getContactById,
-  removeContact,
-  addContact,
+  deleteContact,
+  addContact, 
   updateContact,
 }
