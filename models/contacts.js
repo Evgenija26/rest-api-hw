@@ -8,7 +8,6 @@ const allContacts = async () => {
   const data = await fs.readFile(contactsPath, "utf-8");
   const contacts = JSON.parse(data);
   return JSON.parse(data);
-
 }
 
 const getContactById = async (id) => {    
@@ -58,7 +57,6 @@ const updateContact = async(id, {name, email, phone}) => {
   return contacts[contactIndex];
 
 }
-
 
 module.exports = {
   allContacts,
